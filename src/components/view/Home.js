@@ -83,6 +83,13 @@ export default class Home extends Component {
               }
             />
             <Tab
+                heading={
+                  <TabHeading>
+                    <Icon name={"notifications"} />
+                  </TabHeading>
+                }
+            />
+            <Tab
               heading={
                 <TabHeading>
                   <Icon name={"menu"} />

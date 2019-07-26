@@ -7,6 +7,7 @@ import {
   FlatList,
   TouchableOpacity
 } from "react-native";
+import { withNavigation } from "react-navigation";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
 import {
@@ -23,7 +24,7 @@ import {
 } from "native-base";
 import firebase from "react-native-firebase";
 
-export default class NewsFeed extends Component {
+class NewsFeed extends Component {
   constructor(props) {
     super(props);
     this.fetchData = firebase.firestore().collection("users");
@@ -34,11 +35,11 @@ export default class NewsFeed extends Component {
       uid: "",
       name: "",
       email: "",
-      address: "",
-      profileImage: ""
+      address: ""
     };
   }
 
+  //Fetch Data for the News Feed
   onCollectionUpdate = querySnapshot => {
     const userInfo = [];
     querySnapshot.forEach(doc => {
@@ -54,10 +55,11 @@ export default class NewsFeed extends Component {
     });
     this.setState({
       userInfo,
-      loading: false
+      loading: true
     });
   };
 
+  //Fetch the data of Current User
   componentDidMount() {
     const { uid } = this.props;
     this.unsubscribe = this.fetchData.onSnapshot(this.onCollectionUpdate);
@@ -98,16 +100,20 @@ export default class NewsFeed extends Component {
     }
     return (
       <StyleProvider style={getTheme(material)}>
-        <Container>
-          <TouchableOpacity style={{ flexDirection: "row", padding: 20 }}>
+        <Container style={{ padding: 10 }}>
+          <TouchableOpacity
+            style={{ flexDirection: "row", padding: 20 }}
+            onPress={() => {
+              this.props.navigation.navigate("postUpdateRoute");
+            }}
+          >
             <Image
               source={{ uri: this.state.profileImage }}
               style={{ height: 50, width: 50, borderRadius: 100 }}
             />
 
-            <Title style={{ marginTop: 20, marginLeft: 20 }}>
-              {" "}
-              Post Something ....
+            <Title style={{ marginTop: 15, marginLeft: 20 }}>
+              Post some update ....
             </Title>
           </TouchableOpacity>
 
@@ -115,8 +121,8 @@ export default class NewsFeed extends Component {
             data={this.state.userInfo}
             renderItem={({ item, index }) => {
               return (
-                <Card>
-                  <CardItem header>
+                <Card style={{ marginTop: 10 }}>
+                  <CardItem header bordered>
                     <Image
                       source={{ uri: item.profileImage }}
                       style={{ width: 40, height: 40, borderRadius: 100 }}
@@ -140,3 +146,5 @@ export default class NewsFeed extends Component {
     );
   }
 }
+
+export default withNavigation(NewsFeed);

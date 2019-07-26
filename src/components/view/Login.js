@@ -141,9 +141,11 @@ export default class Login extends Component {
                     {/*  component={InputFields}*/}
                     {/*  placeholder="email@gmail.com"*/}
                     {/*/>*/}
+
                     {errors.email && touched.email ? (
                       <View>
                         <Item error rounded>
+                          <Icon active name='mail' />
                           <Input
                             name="email"
                             onChangeText={handleChange("email")}
@@ -158,15 +160,19 @@ export default class Login extends Component {
                         </Text>
                       </View>
                     ) : (
-                      <Item rounded>
-                        <Input
-                          name="email"
-                          onChangeText={handleChange("email")}
-                          onBlur={handleBlur("email")}
-                          value={values.email}
-                          placeholder="email@gmail.com"
-                        />
-                      </Item>
+                        <View>
+                          <Item rounded>
+                            <Icon active name='mail' />
+                            <Input
+                                name="email"
+                                onChangeText={handleChange("email")}
+                                onBlur={handleBlur("email")}
+                                value={values.email}
+                                placeholder="email@gmail.com"
+                            />
+                          </Item>
+                        </View>
+
                     )}
                   </View>
                   <View style={{ marginTop: 10 }}>
@@ -179,7 +185,9 @@ export default class Login extends Component {
                     {/*/>*/}
                     {errors.password && touched.password ? (
                       <View>
+
                         <Item error rounded>
+                          <Icon active name='key' />
                           <Input
                             name="password"
                             onChangeText={handleChange("password")}
@@ -195,16 +203,20 @@ export default class Login extends Component {
                         </Text>
                       </View>
                     ) : (
-                      <Item rounded>
-                        <Input
-                          name="password"
-                          onChangeText={handleChange("password")}
-                          onBlur={handleBlur("password")}
-                          value={values.password}
-                          secureTextEntry={true}
-                          placeholder="your password..."
-                        />
-                      </Item>
+                        <View>
+                          <Item rounded>
+                            <Icon active name='key' />
+                            <Input
+                                name="password"
+                                onChangeText={handleChange("password")}
+                                onBlur={handleBlur("password")}
+                                value={values.password}
+                                secureTextEntry={true}
+                                placeholder="your password..."
+                            />
+                          </Item>
+                        </View>
+
                     )}
                   </View>
                   <View>

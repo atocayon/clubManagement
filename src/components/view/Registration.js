@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import * as yup from "yup";
 import { View, Text, ActivityIndicator, StyleSheet, Alert, TouchableOpacity,Image, PermissionsAndroid } from "react-native";
 import { Formik, Field } from "formik";
 import ImagePicker from "react-native-image-crop-picker";
@@ -17,7 +18,7 @@ import {
     Card
 } from "native-base";
 // import InputFields from "../common/forms/InputFields";
-import * as yup from "yup";
+
 
 import HeaderComponent from '../common/header/HeaderComponent';
 
@@ -303,6 +304,7 @@ export default class Registration extends Component {
                   {errors.name && touched.name ? (
                       <View>
                         <Item error rounded>
+                          <Icon active name='person' />
                           <Input
                               name="name"
                               onChangeText={handleChange("name")}
@@ -314,15 +316,19 @@ export default class Registration extends Component {
                         <Text style={{color: '#ff0000', marginLeft: 30}}>{errors.name}</Text>
                       </View>
                   ) : (
-                      <Item rounded>
-                        <Input
-                            name="name"
-                            onChangeText={handleChange("name")}
-                            onBlur={handleBlur("name")}
-                            value={values.name}
-                            placeholder="Your full name ..."
-                        />
-                      </Item>
+                      <View>
+                        <Item rounded>
+                          <Icon active name='person' />
+                          <Input
+                              name="name"
+                              onChangeText={handleChange("name")}
+                              onBlur={handleBlur("name")}
+                              value={values.name}
+                              placeholder="Your full name ..."
+                          />
+                        </Item>
+                      </View>
+
                   )}
 
                 </View>
@@ -337,6 +343,7 @@ export default class Registration extends Component {
                   {errors.address && touched.address ? (
                       <View>
                         <Item error rounded>
+                          <Icon active name='pin' />
                           <Input
                               name="address"
                               onChangeText={handleChange("address")}
@@ -348,15 +355,19 @@ export default class Registration extends Component {
                         <Text style={{color: '#ff0000', marginLeft: 30}}>{errors.address}</Text>
                       </View>
                   ) : (
-                      <Item rounded>
-                        <Input
-                            name="address"
-                            onChangeText={handleChange("address")}
-                            onBlur={handleBlur("address")}
-                            value={values.address}
-                            placeholder="Your Address ..."
-                        />
-                      </Item>
+                      <View>
+                        <Item rounded>
+                          <Icon active name='pin' />
+                          <Input
+                              name="address"
+                              onChangeText={handleChange("address")}
+                              onBlur={handleBlur("address")}
+                              value={values.address}
+                              placeholder="Your Address ..."
+                          />
+                        </Item>
+                      </View>
+
                   )}
                 </View>
                 <View style={{ marginTop: 10 }}>
@@ -369,6 +380,7 @@ export default class Registration extends Component {
                   {errors.email && touched.email ? (
                       <View>
                         <Item error rounded>
+                          <Icon active name='mail' />
                           <Input
                               name="email"
                               onChangeText={handleChange("email")}
@@ -380,15 +392,19 @@ export default class Registration extends Component {
                         <Text style={{color: '#ff0000', marginLeft: 30}}>{errors.email}</Text>
                       </View>
                   ) : (
-                      <Item rounded>
-                        <Input
-                            name="email"
-                            onChangeText={handleChange("email")}
-                            onBlur={handleBlur("email")}
-                            value={values.email}
-                            placeholder="email@gmail.com"
-                        />
-                      </Item>
+                      <View>
+                        <Item rounded>
+                          <Icon active name='mail' />
+                          <Input
+                              name="email"
+                              onChangeText={handleChange("email")}
+                              onBlur={handleBlur("email")}
+                              value={values.email}
+                              placeholder="email@gmail.com"
+                          />
+                        </Item>
+                      </View>
+
                   )}
                 </View>
                 <View style={{ marginTop: 10 }}>
@@ -402,6 +418,7 @@ export default class Registration extends Component {
                   {errors.password && touched.password ? (
                       <View>
                         <Item error rounded>
+                          <Icon active name='key' />
                           <Input
                               name="password"
                               onChangeText={handleChange("password")}
@@ -414,16 +431,20 @@ export default class Registration extends Component {
                         <Text style={{color: '#ff0000', marginLeft: 30}}>{errors.password}</Text>
                       </View>
                   ) : (
-                      <Item  rounded>
-                        <Input
-                            name="password"
-                            onChangeText={handleChange("password")}
-                            onBlur={handleBlur("password")}
-                            value={values.password}
-                            placeholder="Your Password ..."
-                            secureTextEntry={true}
-                        />
-                      </Item>
+                      <View>
+                        <Item  rounded>
+                          <Icon active name='key' />
+                          <Input
+                              name="password"
+                              onChangeText={handleChange("password")}
+                              onBlur={handleBlur("password")}
+                              value={values.password}
+                              placeholder="Your Password ..."
+                              secureTextEntry={true}
+                          />
+                        </Item>
+                      </View>
+
                   )}
                 </View>
 
