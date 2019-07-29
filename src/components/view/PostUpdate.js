@@ -1,11 +1,20 @@
 import React, { Component } from "react";
-import { View, Text, Image, ActivityIndicator, Modal, TouchableHighlight, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ActivityIndicator,
+  Modal,
+  TouchableHighlight,
+  FlatList
+} from "react-native";
+import Emoji from "react-native-emoji";
 import firebase from "react-native-firebase";
 import { withNavigation } from "react-navigation";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
 import { Formik, Field } from "formik";
-
+import Moment from 'react-moment';
 import HeaderComponent from "../common/header/HeaderComponent";
 
 import {
@@ -35,35 +44,42 @@ import {
   Row,
   InputGroup,
   Toast,
-    CheckBox
+  CheckBox,
+  Subtitle
 } from "native-base";
 import * as yup from "yup";
-import DocumentPicker from 'react-native-document-picker';
+
+import ImagePicker from "react-native-image-crop-picker";
+import moment from 'moment';
 
 class PostUpdate extends Component {
   constructor(props) {
     super(props);
     this.state = {
       loading: true,
-      currentUser: {},
+      name: "",
       uid: "",
+      profileImage: "",
       members: {},
       membersID: "",
 
       //For NewsFeed Data
+      curTime: moment().format('MMMM Do YYYY, h:mm:ss a'),
       userTextPost: "",
       uploadFile: "",
-      tagPeopleID: [],
-      tagPeopleName: [],
+      tagPeople: [],
       addFeelings: "",
       location: "",
       rowSpan: 10,
       modalVisible: false,
-    };
 
+      //    Dialog
+      dialogFeelings: false
+    };
   }
 
   componentDidMount() {
+    console.log("This is the current system time: "+this.state.curTime);
     const user = firebase.auth().currentUser;
     const { navigation } = this.props;
     const ref = firebase
@@ -72,8 +88,10 @@ class PostUpdate extends Component {
       .doc(user.uid);
     ref.get().then(doc => {
       if (doc.exists) {
+        const currentUser = doc.data();
         this.setState({
-          currentUser: doc.data(),
+          name: currentUser.name,
+          profileImage: currentUser.profileImage,
           uid: doc.id,
           loading: false
         });
@@ -81,77 +99,68 @@ class PostUpdate extends Component {
         console.log("No such Document...");
       }
     });
+
+
   }
 
- // After File Upload
- preparedData = (param = false) => {
+  // After File Upload
+  preparedData = (param = false) => {
     let data = {
-      idUserPosted: this.state.currentUser.uid,
-      nameUserPosted: this.state.currentUser.name,
+      idUserPosted: this.state.uid,
+      nameUserPosted: this.state.name,
+
+      profileUserPosted: this.state.profileImage,
       postedText: this.state.userTextPost,
       addedFile: param.downloadURL,
-      tagPeopleID: this.state.tagPeopleID,
-      tagPeopleName: this.state.tagPeopleName,
-      addedFeelings: this.state.addedFeelings,
-      addedLocation: this.state.addedLocation
+      tagPeople: this.state.tagPeople,
+      addedFeelings: this.state.addFeelings,
+      addedLocation: this.state.location
     };
 
     this.createPost(data);
- };
-
-  createPost = (data) => {
-    firebase
-        .firestore()
-        .collection("newsFeed")
-        .doc(data.idUserPosted)
-        .set(data)
-        .then((data) => {
-          this.props.navigation.navigate('homeRoute');
-        }).catch((err)=>{
-      console.log(err);
-    });
-
   };
 
-  async getFile() {
-    try {
-      const results = await DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.allFiles],
+  createPost = data => {
+    firebase
+      .firestore()
+      .collection("newsFeed")
+      .add(data)
+      .then(data => {
+        console.log("Successfully Posted");
+        this.props.navigation.navigate("homeRoute");
+      })
+      .catch(err => {
+        console.log(err);
       });
+  };
 
-      for (const res of results) {
-        console.log(
-            res.uri,
-            res.type, // mime type
-            res.name,
-            res.size
-        );
-      }
-
-    } catch (err) {
-      if (DocumentPicker.isCancel(err)) {
-        // User cancelled the picker, exit any dialogs or menus and move on
-      } else {
-        throw err;
-      }
-    }
+  getFile() {
+    ImagePicker.openPicker({
+      width: 300,
+      height: 400,
+      compressImageQuality: 1
+    }).then(image => {
+      this.setState({ uploadFile: image });
+    });
   }
 
   //File Upload
   uploadFile() {
     let param = this.state.uploadFile;
-    console.log("=======================>"+param+"<===============================");
+    console.log(
+      "=======================>" + param + "<==============================="
+    );
     if (param) {
       const sessionId = new Date().getTime();
       let file = param.path;
       firebase
-          .storage()
-          .ref("newsFeedPostedFile", file)
-          .child(`${sessionId}.${param.mime}`)
-          .putFile(file)
-          .then(url => {
-            this.preparedData(url);
-          });
+        .storage()
+        .ref("newsFeedPostedFile", file)
+        .child(`${sessionId}.${param.mime}`)
+        .putFile(file)
+        .then(url => {
+          this.preparedData(url);
+        });
     } else {
       this.preparedData();
     }
@@ -170,14 +179,182 @@ class PostUpdate extends Component {
         <Container>
           <HeaderComponent routeNavigation={"homeRoute"} />
           <Content style={{ marginTop: 10 }}>
+            {/*Dialog Feelings*/}
+            <Modal
+              animationType="slide"
+              transparent={false}
+              visible={this.state.dialogFeelings}
+              onRequestClose={() => {
+                console.log("Modal has been closed.");
+              }}
+            >
+              <View style={{ marginTop: 22 }}>
+                <View>
+                  <CardItem bordered>
+                    <Emoji name="blush" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Joyful"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Joyful
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="fearful" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Fearful"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Fearful
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="hushed" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Surprise"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Surprise
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="worried" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Sad"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Sad
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="triumph" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Disgust"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Disgust
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="angry" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Angry"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Angry
+                      </Title>
+                    </Button>
+                  </CardItem>
+
+                  <CardItem bordered>
+                    <Emoji name="grinning" style={{ fontSize: 50 }} />
+                    <Button
+                      block
+                      transparent
+                      onPress={() => {
+                        this.setState({
+                          dialogFeelings: false,
+                          addFeelings: "Feeling Happy"
+                        });
+                      }}
+                    >
+                      <Title style={{ marginLeft: 10, marginTop: 10 }}>
+                        Feeling Happy
+                      </Title>
+                    </Button>
+                  </CardItem>
+                </View>
+              </View>
+            </Modal>
+            {/*End Dialog Feelings*/}
+
             <CardItem header bordered>
               <Image
-                source={{ uri: this.state.currentUser.profileImage }}
+                source={{ uri: this.state.profileImage }}
                 style={{ height: 50, width: 50, borderRadius: 100 }}
               />
-              <Title style={{ marginLeft: 20 }}>
-                {this.state.currentUser.name}
-              </Title>
+              <Title style={{ marginLeft: 20 }}>{this.state.name}</Title>
+              {/*Human Basic Emotions*/}
+              {this.state.addFeelings === "Feeling Joyful" ? (
+                <Subtitle>  is <Emoji name="blush" /> Feeling joyful
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Fearful" ? (
+                <Subtitle>  is <Emoji name="fearful" /> Feeling Fearful
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Surprise" ? (
+                <Subtitle>  is <Emoji name="hushed" /> Feeling Surprise
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Sad" ? (
+                <Subtitle>  is <Emoji name="worried" /> Feeling Sad
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Disgust" ? (
+                <Subtitle>  is <Emoji name="triumph" /> Feeling Disgust
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Angry" ? (
+                <Subtitle>  is <Emoji name="angry" /> Feeling Angry
+                </Subtitle>
+              ) : null}
+              {this.state.addFeelings === "Feeling Happy" ? (
+                <Subtitle>  is <Emoji name="grinning" /> Feeling Happy
+                </Subtitle>
+              ) : null}
             </CardItem>
             <Formik
               initialValues={{ textPost: "" }}
@@ -206,36 +383,40 @@ class PostUpdate extends Component {
                 <View>
                   <View>
                     {this.state.uploadFile ? (
-                        <View>
-                          <View style={{flexDirection: 'row',justifyContent: 'center'}}>
-                            <Image source={{uri: this.state.uploadFile.path}} style={{ height: 300, width: '100%'}} />
-
-                          </View>
-                          <Textarea
-                              rowSpan={3}
-                              bordered
-                              placeholder="Say Something..."
-                              name="textPost"
-                              value={values.textPost}
-                              onChangeText={handleChange("textPost")}
-                              onBlue={handleBlur("textPost")}
+                      <View>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            justifyContent: "center"
+                          }}
+                        >
+                          <Image
+                            source={{ uri: this.state.uploadFile.path }}
+                            style={{ height: 300, width: "100%" }}
                           />
                         </View>
-
-                        ) :
-                        (
-                            <View>
-                              <Textarea
-                                  rowSpan={this.state.rowSpan}
-                                  bordered
-                                  placeholder="Say Something..."
-                                  name="textPost"
-                                  value={values.textPost}
-                                  onChangeText={handleChange("textPost")}
-                                  onBlue={handleBlur("textPost")}
-                              />
-                            </View>
-
+                        <Textarea
+                          rowSpan={3}
+                          bordered
+                          placeholder="Say Something..."
+                          name="textPost"
+                          value={values.textPost}
+                          onChangeText={handleChange("textPost")}
+                          onBlue={handleBlur("textPost")}
+                        />
+                      </View>
+                    ) : (
+                      <View>
+                        <Textarea
+                          rowSpan={this.state.rowSpan}
+                          bordered
+                          placeholder="Say Something..."
+                          name="textPost"
+                          value={values.textPost}
+                          onChangeText={handleChange("textPost")}
+                          onBlue={handleBlur("textPost")}
+                        />
+                      </View>
                     )}
 
                     {errors.textPost ? (
@@ -244,7 +425,12 @@ class PostUpdate extends Component {
                       </Text>
                     ) : null}
                   </View>
-                  <Button block onPress={handleSubmit}>
+                  <Button
+                    block
+                    rounded
+                    onPress={handleSubmit}
+                    style={{ marginLeft: 20, marginRight: 20 }}
+                  >
                     <Text style={{ fontWeight: "bold", color: "#fff" }}>
                       Post
                     </Text>
@@ -265,30 +451,29 @@ class PostUpdate extends Component {
                   <InputGroup
                     style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
                   >
-                    <Button transparent onPress={()=>{this.getFile()}}>
-                      <Icon name="photos" />
-                      <Text  style={{ marginLeft: 10 }}>Upload Image</Text>
+                    <Button
+                      transparent
+                      onPress={() => {
+                        this.getFile();
+                      }}
+                    >
+                      <Icon name="photos" style={{ color: "#000" }} />
+                      <Text style={{ marginLeft: 10 }}>Upload Image</Text>
                     </Button>
-
                   </InputGroup>
 
                   <InputGroup
                     style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
                   >
-                    <Button transparent onPress={()=>{this.getFile()}}>
-                      <Icon name="videocam" />
+                    <Button
+                      transparent
+                      onPress={() => {
+                        this.getFile();
+                      }}
+                    >
+                      <Icon name="videocam" style={{ color: "#000" }} />
                       <Text style={{ marginLeft: 10 }}>Upload Video</Text>
                     </Button>
-                  </InputGroup>
-
-                  <InputGroup
-                    style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
-                  >
-                    <Button transparent>
-                      <Icon name="attach" />
-                      <Text style={{ marginLeft: 10 }}>Attach File</Text>
-                    </Button>
-
                   </InputGroup>
                 </View>
               </Col>
@@ -303,31 +488,24 @@ class PostUpdate extends Component {
                   <InputGroup
                     style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
                   >
-                    <Button transparent>
-                      <Icon name="pricetags" />
-                      <Text style={{ marginLeft: 10 }}>Tag People</Text>
-                    </Button>
-
-                  </InputGroup>
-
-                  <InputGroup
-                    style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
-                  >
-                    <Button transparent>
-                      <Icon name="happy" />
+                    <Button
+                      transparent
+                      onPress={() => {
+                        this.setState({ dialogFeelings: true });
+                      }}
+                    >
+                      <Icon name="happy" style={{ color: "#000" }} />
                       <Text style={{ marginLeft: 10 }}>Add Feelings</Text>
                     </Button>
-
                   </InputGroup>
 
                   <InputGroup
                     style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
                   >
                     <Button transparent>
-                      <Icon name="pin" />
+                      <Icon name="pin" style={{ color: "#000" }} />
                       <Text style={{ marginLeft: 10 }}>Add Location</Text>
                     </Button>
-
                   </InputGroup>
                 </View>
               </Col>

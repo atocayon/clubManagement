@@ -5,7 +5,8 @@ import {
   Image,
   ActivityIndicator,
   FlatList,
-  TouchableOpacity
+  TouchableOpacity,
+    TextInput
 } from "react-native";
 import { withNavigation } from "react-navigation";
 import getTheme from "../../../native-base-theme/components";
@@ -20,14 +21,18 @@ import {
   Icon,
   Button,
   InputGroup,
-  Modal
+  Modal,
+    Badge,
+    Input,
+    Item,
+    Subtitle
 } from "native-base";
 import firebase from "react-native-firebase";
 
 class NewsFeed extends Component {
   constructor(props) {
     super(props);
-    this.fetchData = firebase.firestore().collection("users");
+    this.fetchData = firebase.firestore().collection("newsFeed");
     this.unsubscribe = null;
     this.state = {
       userInfo: [],
@@ -43,14 +48,29 @@ class NewsFeed extends Component {
   onCollectionUpdate = querySnapshot => {
     const userInfo = [];
     querySnapshot.forEach(doc => {
-      const { name, address, email, profileImage } = doc.data();
+      const {
+        idUserPosted,
+        nameUserPosted,
+        profileUserPosted,
+        addedFile,
+        addedFeelings,
+        addedLocation,
+        postedText,
+        tagPeopleID,
+        tagPeopleName
+      } = doc.data();
       userInfo.push({
         key: doc.id,
         doc, // DocumentSnapshot
-        name,
-        address,
-        email,
-        profileImage
+        idUserPosted,
+        nameUserPosted,
+        profileUserPosted,
+        addedFile,
+        addedFeelings,
+        addedLocation,
+        postedText,
+        tagPeopleID,
+        tagPeopleName
       });
     });
     this.setState({
@@ -80,10 +100,6 @@ class NewsFeed extends Component {
           profileImage: userInfo.profileImage,
           loading: false
         });
-        console.log(
-          "==============================UserInfo============================="
-        );
-        console.log(userInfo);
       } else {
         console.log("No Document");
       }
@@ -112,9 +128,9 @@ class NewsFeed extends Component {
               style={{ height: 50, width: 50, borderRadius: 100 }}
             />
 
-            <Title style={{ marginTop: 15, marginLeft: 20 }}>
+            <Subtitle style={{ marginTop: 15, marginLeft: 20 }}>
               Post some update ....
-            </Title>
+            </Subtitle>
           </TouchableOpacity>
 
           <FlatList
@@ -124,18 +140,45 @@ class NewsFeed extends Component {
                 <Card style={{ marginTop: 10 }}>
                   <CardItem header bordered>
                     <Image
-                      source={{ uri: item.profileImage }}
+                      source={{ uri: item.profileUserPosted }}
                       style={{ width: 40, height: 40, borderRadius: 100 }}
                     />
-                    <Text style={{ marginLeft: 10 }}>{item.name}</Text>
+                    <Text style={{ marginLeft: 10 }}>
+                      {item.nameUserPosted}
+                    </Text>
                   </CardItem>
                   <CardItem>
                     <Body>
-                      <Text>//Your text here</Text>
+                      <Image
+                        source={{ uri: item.addedFile }}
+                        style={{ height: 250, width: "100%" }}
+                      />
+                      <Text>{item.postedText}</Text>
                     </Body>
                   </CardItem>
-                  <CardItem footer>
-                    <Text>GeekyAnts</Text>
+                  <CardItem style={{flexDirection: 'row'}}>
+
+                      <Button iconLeft transparent>
+                        <Icon name={'thumbs-up'} style={{color: "#000"}} />
+                        <Badge style={{backgroundColor: '#fff'}}>
+                          <Text>2</Text>
+                        </Badge>
+                      </Button>
+
+                    <Button iconLeft transparent>
+                      <Icon name={'thumbs-down'} style={{color: "#000"}}/>
+                      <Badge style={{backgroundColor: '#fff'}}>
+                        <Text>5</Text>
+                      </Badge>
+                    </Button>
+
+                    <Button iconLeft transparent>
+                      <Icon name={'text'} style={{color: "#000"}}/>
+                      <Badge style={{backgroundColor: '#fff'}}>
+                        <Text>7</Text>
+                      </Badge>
+                    </Button>
+
                   </CardItem>
                 </Card>
               );
