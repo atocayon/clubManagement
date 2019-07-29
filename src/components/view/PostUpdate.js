@@ -119,6 +119,8 @@ class PostUpdate extends Component {
         type: [DocumentPicker.types.allFiles],
       });
 
+      console.log("The URI of the receive document"+results.uri);
+
       for (const res of results) {
         console.log(
             res.uri,
