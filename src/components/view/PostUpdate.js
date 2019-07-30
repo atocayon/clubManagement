@@ -6,7 +6,10 @@ import {
   ActivityIndicator,
   Modal,
   TouchableHighlight,
-  FlatList
+  FlatList,
+  Alert,
+  PermissionsAndroid,
+  Platform
 } from "react-native";
 import Emoji from "react-native-emoji";
 import firebase from "react-native-firebase";
@@ -14,7 +17,9 @@ import { withNavigation } from "react-navigation";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
 import { Formik, Field } from "formik";
-import Moment from 'react-moment';
+import Geolocation from "@react-native-community/geolocation";
+import Geocoder from "react-native-geocoder";
+import RNGooglePlaces from 'react-native-google-places';
 import HeaderComponent from "../common/header/HeaderComponent";
 
 import {
@@ -50,7 +55,7 @@ import {
 import * as yup from "yup";
 
 import ImagePicker from "react-native-image-crop-picker";
-import moment from 'moment';
+import moment from "moment";
 
 class PostUpdate extends Component {
   constructor(props) {
@@ -64,12 +69,12 @@ class PostUpdate extends Component {
       membersID: "",
 
       //For NewsFeed Data
-      curTime: moment().format('MMMM Do YYYY, h:mm:ss a'),
+      curTime: moment().format("MMMM Do YYYY, h:mm:ss a"),
       userTextPost: "",
       uploadFile: "",
       tagPeople: [],
       addFeelings: "",
-      location: "",
+      addLocation: "",
       rowSpan: 10,
       modalVisible: false,
 
@@ -78,8 +83,34 @@ class PostUpdate extends Component {
     };
   }
 
+  async requestLocationPermission() {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: "Club Management App Gallery Permission",
+          message:
+            "Club Management App needs access to your location " +
+            "so you can post current location.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Cancel",
+          buttonPositive: "OK"
+        }
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        this.findCoordinates();
+      } else {
+        console.log("Location permission denied");
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  }
+
+
+
   componentDidMount() {
-    console.log("This is the current system time: "+this.state.curTime);
+    console.log("This is the current system time: " + this.state.curTime);
     const user = firebase.auth().currentUser;
     const { navigation } = this.props;
     const ref = firebase
@@ -99,8 +130,38 @@ class PostUpdate extends Component {
         console.log("No such Document...");
       }
     });
+  }
+
+  // openSearchModal() {
+  //   RNGooglePlaces.openAutocompleteModal({type: 'address'})
+  //       .then((place) => {
+  //         console.log(place);
+  //         // place represents user's selection from the
+  //         // suggestions and it is a simplified Google Place object.
+  //         this.setState({addLocation: place});
+  //       })
+  //       .catch(error => console.log(error.message));  // error is a Javascript Error object
+  // }
 
 
+  findCoordinates() {
+    console.log("Getting Location");
+    Geolocation.getCurrentPosition(
+        position => {
+          console.log("Latitude: " + position.coords.latitude);
+          console.log("Longitude: " + position.coords.longitude);
+
+          const pos = {lat: position.coords.latitude, lng: position.coords.longitude};
+          Geocoder.geocodePosition(pos)
+              .then(res => {
+                console.log(res[0].subAdminArea+","+res[0].country);
+                this.setState({addLocation: res[0].subAdminArea+", "+res[0].country});
+              })
+              .catch(error => console.log(error));
+        },
+        err => console.log(err),
+        {}
+    );
   }
 
   // After File Upload
@@ -108,13 +169,13 @@ class PostUpdate extends Component {
     let data = {
       idUserPosted: this.state.uid,
       nameUserPosted: this.state.name,
-
       profileUserPosted: this.state.profileImage,
       postedText: this.state.userTextPost,
       addedFile: param.downloadURL,
       tagPeople: this.state.tagPeople,
       addedFeelings: this.state.addFeelings,
-      addedLocation: this.state.location
+      addedLocation: this.state.addLocation,
+      timePosted: this.state.curTime
     };
 
     this.createPost(data);
@@ -141,7 +202,7 @@ class PostUpdate extends Component {
       compressImageQuality: 1
     }).then(image => {
       this.setState({ uploadFile: image });
-    });
+    }).catch((err)=>{console.log(err)});
   }
 
   //File Upload
@@ -174,10 +235,15 @@ class PostUpdate extends Component {
         </View>
       );
     }
+
+
     return (
       <StyleProvider style={getTheme(material)}>
         <Container>
-          <HeaderComponent routeNavigation={"homeRoute"} />
+          <HeaderComponent
+            routeNavigation={"homeRoute"}
+            headerText={"Create Post"}
+          />
           <Content style={{ marginTop: 10 }}>
             {/*Dialog Feelings*/}
             <Modal
@@ -320,42 +386,69 @@ class PostUpdate extends Component {
             </Modal>
             {/*End Dialog Feelings*/}
 
+            {/*Body*/}
             <CardItem header bordered>
+              {/*User Profile*/}
               <Image
                 source={{ uri: this.state.profileImage }}
-                style={{ height: 50, width: 50, borderRadius: 100 }}
+                style={{ height: 80, width: 80, borderRadius: 100 }}
               />
-              <Title style={{ marginLeft: 20 }}>{this.state.name}</Title>
+              <View style={{marginLeft: 20}}>
+                <Text style={{fontWeight: "bold",fontSize: 20 }}>
+                  {this.state.name}
+                </Text>
+
+              {/*End User Profile*/}
+
               {/*Human Basic Emotions*/}
               {this.state.addFeelings === "Feeling Joyful" ? (
-                <Subtitle>  is <Emoji name="blush" /> Feeling joyful
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="blush" /> Feeling joyful
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Fearful" ? (
-                <Subtitle>  is <Emoji name="fearful" /> Feeling Fearful
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="fearful" /> Feeling Fearful
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Surprise" ? (
-                <Subtitle>  is <Emoji name="hushed" /> Feeling Surprise
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="hushed" /> Feeling Surprise
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Sad" ? (
-                <Subtitle>  is <Emoji name="worried" /> Feeling Sad
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="worried" /> Feeling Sad
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Disgust" ? (
-                <Subtitle>  is <Emoji name="triumph" /> Feeling Disgust
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="triumph" /> Feeling Disgust
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Angry" ? (
-                <Subtitle>  is <Emoji name="angry" /> Feeling Angry
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="angry" /> Feeling Angry
+                </Text>
               ) : null}
               {this.state.addFeelings === "Feeling Happy" ? (
-                <Subtitle>  is <Emoji name="grinning" /> Feeling Happy
-                </Subtitle>
+                <Text style={{fontSize: 12}}>
+                  {" "}
+                  is <Emoji name="grinning" /> Feeling Happy
+                </Text>
               ) : null}
+
+              {this.state.addLocation ? (<Text style={{fontSize: 12}}>in {this.state.addLocation}</Text>) : null}
+              </View>
             </CardItem>
+
+            {/*Posting Section*/}
             <Formik
               initialValues={{ textPost: "" }}
               onSubmit={values => {
@@ -502,7 +595,12 @@ class PostUpdate extends Component {
                   <InputGroup
                     style={{ padding: 10, marginLeft: 20, marginRight: 20 }}
                   >
-                    <Button transparent>
+                    <Button
+                      transparent
+                      onPress={() => {
+                        this.requestLocationPermission();
+                      }}
+                    >
                       <Icon name="pin" style={{ color: "#000" }} />
                       <Text style={{ marginLeft: 10 }}>Add Location</Text>
                     </Button>

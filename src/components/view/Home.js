@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Text, Image } from "react-native";
+import { View, Text, Image , ActivityIndicator} from "react-native";
 import firebase from "react-native-firebase";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
@@ -29,16 +29,27 @@ import {
 export default class Home extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      loading: true,
+      menuOptionsVisibility: false,
+      newsFeedOptionsVisibility: false
+    };
+  }
+
+  componentDidMount(){
+    this.setState({
+        loading: false,
+      menuOptionsVisibility: true,
+      newsFeedOptionsVisibility: true
+    });
   }
 
   menuOptions() {
-    const user = firebase.auth().currentUser;
-    return <MenuOptions uid={user.uid} />;
+    return <MenuOptions />;
   }
 
   newsFeedOptions() {
-    const user = firebase.auth().currentUser;
-    return <NewsFeed uid={user.uid} />;
+    return <NewsFeed />;
   }
 
   render() {
@@ -47,10 +58,11 @@ export default class Home extends Component {
         <Container>
           <Header style={{ backgroundColor: "#fff" }}>
             <Left>
-              <Image
-                source={require("../common/img/icon.png")}
-                style={{ width: 30, height: 30 }}
-              />
+              {this.state.loading ? <ActivityIndicator /> : <Image
+                  source={require("../common/img/icon.png")}
+                  style={{ width: 30, height: 30 }}
+              />}
+
             </Left>
             <Body>
               <Title style={{ color: "#000" }}>Club Management</Title>
@@ -66,7 +78,7 @@ export default class Home extends Component {
                 </TabHeading>
               }
             >
-              {this.newsFeedOptions()}
+              {this.state.newsFeedOptionsVisibility ? this.newsFeedOptions():null}
             </Tab>
             <Tab
               heading={
@@ -96,7 +108,7 @@ export default class Home extends Component {
                 </TabHeading>
               }
             >
-              {this.menuOptions()}
+              {this.state.menuOptionsVisibility ? this.menuOptions():null}
             </Tab>
           </Tabs>
         </Container>

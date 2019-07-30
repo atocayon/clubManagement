@@ -9,7 +9,8 @@ import {
   CardItem,
   Title,
   Body,
-    Subtitle
+    Subtitle,
+    Icon
 } from "native-base";
 import firebase from "react-native-firebase";
 import { withNavigation } from "react-navigation";
@@ -28,13 +29,12 @@ class MenuOptions extends Component {
   }
 
   componentDidMount() {
-    const { uid } = this.props;
+    const user = firebase.auth().currentUser;
     this.setState({ loading: true });
     const ref = firebase
       .firestore()
       .collection("users")
-      .doc(uid);
-    console.log("Database Check: >>>>>" + ref);
+      .doc(user.uid);
     ref.get().then(doc => {
       if (doc.exists) {
         const userInfo = doc.data();
@@ -66,17 +66,18 @@ class MenuOptions extends Component {
           <CardItem bordered>
             <Image
               source={{ uri: this.state.profileImage }}
-              style={{ height: 50, width: 50, borderRadius: 100 }}
+              style={{ height: 70, width: 70, borderRadius: 100 }}
             />
-            <View>
-              <Title style={{ marginLeft: 30 }}>{this.state.name}</Title>
-              <Subtitle>View Profile</Subtitle>
+            <View style={{ marginLeft: 30 }}>
+              <Title >{this.state.name}</Title>
+              <Text>View Profile</Text>
             </View>
 
 
           </CardItem>
 
           <CardItem bordered>
+            <Icon name={'log-out'} />
             <Subtitle
               onPress={() => {
                 firebase
@@ -87,6 +88,7 @@ class MenuOptions extends Component {
                   });
               }}
             >
+
               Logout
             </Subtitle>
           </CardItem>

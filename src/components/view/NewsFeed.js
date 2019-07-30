@@ -56,8 +56,8 @@ class NewsFeed extends Component {
         addedFeelings,
         addedLocation,
         postedText,
-        tagPeopleID,
-        tagPeopleName
+        tagPeople,
+        timePosted
       } = doc.data();
       userInfo.push({
         key: doc.id,
@@ -69,26 +69,27 @@ class NewsFeed extends Component {
         addedFeelings,
         addedLocation,
         postedText,
-        tagPeopleID,
-        tagPeopleName
+        tagPeople,
+        timePosted
       });
     });
     this.setState({
-      userInfo,
+      userInfo: userInfo.sort((a, b) => {
+        return (a.timePosted > b.timePosted);
+      }),
       loading: true
     });
   };
 
   //Fetch the data of Current User
   componentDidMount() {
-    const { uid } = this.props;
+      const user = firebase.auth().currentUser;
     this.unsubscribe = this.fetchData.onSnapshot(this.onCollectionUpdate);
 
     const ref = firebase
       .firestore()
       .collection("users")
-      .doc(uid);
-    console.log("Database Check: >>>>>" + ref);
+      .doc(user.uid);
     ref.get().then(doc => {
       if (doc.exists) {
         const userInfo = doc.data();
@@ -141,11 +142,17 @@ class NewsFeed extends Component {
                   <CardItem header bordered>
                     <Image
                       source={{ uri: item.profileUserPosted }}
-                      style={{ width: 40, height: 40, borderRadius: 100 }}
+                      style={{ width: 70, height: 70, borderRadius: 100 }}
                     />
-                    <Text style={{ marginLeft: 10 }}>
-                      {item.nameUserPosted}
-                    </Text>
+                    <View style={{marginLeft: 15}}>
+                      <Text style={{ fontWeight: 'bold' }}>
+                        {item.nameUserPosted}
+                      </Text>
+                      <Text style={{fontSize: 11}}>{item.addedFeelings}</Text>
+                      <Text style={{fontSize: 11}}>{item.addedLocation}</Text>
+                      <Text style={{fontSize: 11}}>{item.timePosted}</Text>
+                    </View>
+
                   </CardItem>
                   <CardItem>
                     <Body>

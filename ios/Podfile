@@ -34,6 +34,10 @@ target 'clubManagement' do
 
   pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
 
+  pod 'react-native-geolocation', :path => '../node_modules/@react-native-community/geolocation'
+
+  pod 'react-native-google-places', :path => '../node_modules/react-native-google-places'
+
   target 'clubManagementTests' do
     inherit! :search_paths
     # Pods for testing

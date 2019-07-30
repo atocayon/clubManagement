@@ -7,6 +7,8 @@ import com.facebook.react.PackageList;
 import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
 import com.facebook.react.ReactApplication;
+import com.arttitude360.reactnative.rngoogleplaces.RNGooglePlacesPackage;
+import com.reactnativecommunity.geolocation.GeolocationPackage;
 import com.imagepicker.ImagePickerPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import io.invertase.firebase.firestore.RNFirebaseFirestorePackage;
@@ -18,6 +20,7 @@ import com.facebook.soloader.SoLoader;
 import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.storage.RNFirebaseStoragePackage;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
+import com.airbnb.android.react.maps.MapsPackage;
 
 import java.util.List;
 
@@ -37,6 +40,7 @@ public class MainApplication extends Application implements ReactApplication {
       packages.add(new RNFirebaseAuthPackage());
       packages.add(new RNFirebaseFirestorePackage());
       packages.add(new RNFirebaseStoragePackage());
+//      packages.add(new MapsPackage());
 //      packages.add(new DocumentPickerPackage());
 //      packages.add(new VectorIconsPackage());
 //      packages.add(new RNFirebasePackage());
