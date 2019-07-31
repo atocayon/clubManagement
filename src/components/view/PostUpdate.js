@@ -1,15 +1,12 @@
 import React, { Component } from "react";
+import Reactotron from 'reactotron-react-native'
 import {
   View,
   Text,
   Image,
   ActivityIndicator,
   Modal,
-  TouchableHighlight,
-  FlatList,
-  Alert,
   PermissionsAndroid,
-  Platform
 } from "react-native";
 import Emoji from "react-native-emoji";
 import firebase from "react-native-firebase";
@@ -25,32 +22,16 @@ import HeaderComponent from "../common/header/HeaderComponent";
 import {
   Container,
   Content,
-  Item,
-  Input,
   Icon,
-  Right,
   Title,
-  Label,
   Button,
-  Header,
-  Left,
-  Body,
   CardItem,
-  Footer,
-  FooterTab,
-  Tabs,
-  Tab,
-  TabHeading,
   StyleProvider,
   Textarea,
-  Card,
   Grid,
   Col,
-  Row,
   InputGroup,
-  Toast,
-  CheckBox,
-  Subtitle
+
 } from "native-base";
 import * as yup from "yup";
 
@@ -100,17 +81,17 @@ class PostUpdate extends Component {
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         this.findCoordinates();
       } else {
-        console.log("Location permission denied");
+        Reactotron.log("Location permission denied");
       }
     } catch (err) {
-      console.warn(err);
+      Reactotron.log(err);
     }
   }
 
 
 
   componentDidMount() {
-    console.log("This is the current system time: " + this.state.curTime);
+    Reactotron.log("This is the current system time: " + this.state.curTime);
     const user = firebase.auth().currentUser;
     const { navigation } = this.props;
     const ref = firebase

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Reactotron from 'reactotron-react-native'
 import * as yup from "yup";
 import { View, Text, ActivityIndicator, StyleSheet, Alert, TouchableOpacity,Image, PermissionsAndroid } from "react-native";
 import { Formik, Field } from "formik";

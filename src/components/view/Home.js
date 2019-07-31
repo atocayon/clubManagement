@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Reactotron from 'reactotron-react-native'
 import { View, Text, Image , ActivityIndicator} from "react-native";
 import firebase from "react-native-firebase";
 import getTheme from "../../../native-base-theme/components";
@@ -26,7 +27,7 @@ import {
   TabHeading,
   StyleProvider
 } from "native-base";
-export default class Home extends Component {
+class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,3 +117,7 @@ export default class Home extends Component {
     );
   }
 }
+
+
+
+export default Home;

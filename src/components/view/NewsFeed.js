@@ -1,4 +1,7 @@
 import React, { Component } from "react";
+import Reactotron from 'reactotron-react-native';
+import {connect} from 'react-redux';
+
 import {
   View,
   Text,
@@ -133,7 +136,6 @@ class NewsFeed extends Component {
               Post some update ....
             </Subtitle>
           </TouchableOpacity>
-
           <FlatList
             data={this.state.userInfo}
             renderItem={({ item, index }) => {
@@ -154,6 +156,7 @@ class NewsFeed extends Component {
                     </View>
 
                   </CardItem>
+
                   <CardItem>
                     <Body>
                       <Image
@@ -197,4 +200,10 @@ class NewsFeed extends Component {
   }
 }
 
-export default withNavigation(NewsFeed);
+const mapStateToProps = state => {
+  return {
+    loginSuccess: state.login.loginSuccess
+  }
+}
+
+export default connect(mapStateToProps, null)(withNavigation(NewsFeed));

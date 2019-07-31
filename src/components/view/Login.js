@@ -1,4 +1,6 @@
 import * as yup from "yup";
+import Reactotron from 'reactotron-react-native';
+import {connect} from 'react-redux';
 import React, { Component } from "react";
 import {
   StackActions,
@@ -17,23 +19,18 @@ import {
 } from "react-native";
 import { Formik, Field } from "formik";
 import {
-  Container,
-  Content,
-  Title,
-  Form,
   Item,
   Label,
   Input,
-  CardItem,
   Button,
-  Spinner,
   Icon
 } from "native-base";
 import firebase from "react-native-firebase";
+import {login} from "../redux/actions/login";
 
 // import InputFields from "../common/forms/InputFields";
 
-export default class Login extends Component {
+class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -42,7 +39,6 @@ export default class Login extends Component {
       password: ""
     };
   }
-
   componentDidMount() {
     firebase
         .auth()
@@ -52,6 +48,8 @@ export default class Login extends Component {
           index: 0,
           actions: [NavigationActions.navigate({ routeName: "homeRoute" })]
         });
+
+
         this.props.navigation.dispatch(resetAction);
       }
     });
@@ -67,28 +65,12 @@ export default class Login extends Component {
   }
 
   login() {
+    Reactotron.log("Login Handler");
     const { email, password } = this.state;
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(email, password)
-      .then(() => {
-        this.props.navigation.navigate("homeRoute");
-      })
-      .catch(err => {
-        if (err.code == "auth/user-not-found") {
-          let msg = "There is no user with an email of " + this.state.email;
-          Alert.alert(msg, "", [{ text: "OK" }], { cancelable: false });
-          this.setState({
-            loading: false
-          });
-        } else if (err.code == "auth/wrong-password") {
-          let msg = "Wrong password please try again";
-          Alert.alert(msg, "", [{ text: "OK" }], { cancelable: false });
-          this.setState({
-            loading: false
-          });
-        }
-      });
+
+    Reactotron.log(this.props);
+    this.props.checkLogin(email,password);
+
   }
 
   render() {
@@ -101,6 +83,8 @@ export default class Login extends Component {
               style={{ width: 100, height: 100 }}
             />
           </View>
+
+          <Text>{this.props.loginSuccess}</Text>
           <View style={{ margin: 20 }}>
             <Formik
               initialValues={{ email: "", password: "" }}
@@ -282,3 +266,20 @@ const style = StyleSheet.create({
     marginTop: 30
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    loginSuccess: state.login.loginSuccess
+  }
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    checkLogin: (email, password) => {
+      dispatch(login(email,password))
+    }
+  }
+};
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login)

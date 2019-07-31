@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import Reactotron from 'reactotron-react-native'
 import { View, Text, Image, ActivityIndicator } from "react-native";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
@@ -88,7 +89,6 @@ class MenuOptions extends Component {
                   });
               }}
             >
-
               Logout
             </Subtitle>
           </CardItem>
