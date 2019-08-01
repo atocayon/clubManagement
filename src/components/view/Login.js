@@ -40,19 +40,19 @@ class Login extends Component {
     };
   }
   componentDidMount() {
-    firebase
-        .auth()
-        .onAuthStateChanged((user) => {
-      if (user) {
-        const resetAction = StackActions.reset({
-          index: 0,
-          actions: [NavigationActions.navigate({ routeName: "homeRoute" })]
-        });
-
-
-        this.props.navigation.dispatch(resetAction);
-      }
-    });
+    // firebase
+    //     .auth()
+    //     .onAuthStateChanged((user) => {
+    //   if (user) {
+    //     const resetAction = StackActions.reset({
+    //       index: 0,
+    //       actions: [NavigationActions.navigate({ routeName: "homeRoute" })]
+    //     });
+    //
+    //
+    //     this.props.navigation.dispatch(resetAction);
+    //   }
+    // });
     this.backhandler = BackHandler.addEventListener("hardwareBackPress", () => {
       BackHandler.exitApp();
       return true;
@@ -65,10 +65,7 @@ class Login extends Component {
   }
 
   login() {
-    Reactotron.log("Login Handler");
     const { email, password } = this.state;
-
-    Reactotron.log(this.props);
     this.props.checkLogin(email,password);
 
   }
@@ -84,7 +81,6 @@ class Login extends Component {
             />
           </View>
 
-          <Text>{this.props.loginSuccess}</Text>
           <View style={{ margin: 20 }}>
             <Formik
               initialValues={{ email: "", password: "" }}
@@ -119,7 +115,7 @@ class Login extends Component {
               }) => (
                 <View>
                   <View style={{ marginTop: 10 }}>
-                    <Label style={{ fontWeight: "bold" }}>Email</Label>
+                    <Label>Email</Label>
                     {/*<Field*/}
                     {/*  name="email"*/}
                     {/*  component={InputFields}*/}
@@ -282,4 +278,4 @@ const mapDispatchToProps = dispatch => {
 };
 
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login)
+export default connect(mapStateToProps, mapDispatchToProps)(Login);

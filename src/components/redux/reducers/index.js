@@ -1,9 +1,9 @@
 import {combineReducers} from 'redux';
 import LoginReducer from './LoginReducer';
+import Reactotron from 'reactotron-react-native';
+import RegistrationReducer from './RegistrationReducer';
+
 export default combineReducers({
-   login: LoginReducer
+   login: LoginReducer,
+   reg: RegistrationReducer
 });
-
-
-//console.log(store.getState());
-//{login: []}

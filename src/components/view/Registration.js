@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import Reactotron from 'reactotron-react-native'
+import Reactotron from 'reactotron-react-native';
+import {connect} from 'react-redux';
 import * as yup from "yup";
 import { View, Text, ActivityIndicator, StyleSheet, Alert, TouchableOpacity,Image, PermissionsAndroid } from "react-native";
 import { Formik, Field } from "formik";
@@ -19,11 +20,11 @@ import {
     Card
 } from "native-base";
 // import InputFields from "../common/forms/InputFields";
-
-
+import {registration} from "../redux/actions/registration";
 import HeaderComponent from '../common/header/HeaderComponent';
 
-export default class Registration extends Component {
+
+class Registration extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -34,10 +35,7 @@ export default class Registration extends Component {
       profileImage: "",
       loading: false
     };
-
-
   }
-
     async requestGalleryPermission(){
     try {
       const granted = await PermissionsAndroid.request(
@@ -56,72 +54,12 @@ export default class Registration extends Component {
         this.getGallery();
       } else {
         console.log('Gallery permission denied');
+        Reactotron.log('Gallery permission denied');
       }
     } catch (err) {
       console.warn(err);
+      Reactotron.log(err);
     }
-  }
-
-
-  preparedStatement(param = false) {
-    let data = {
-      name: this.state.name,
-      address: this.state.address,
-      email: this.state.email,
-      password: this.state.password,
-      profileImage: param.downloadURL
-    };
-    this.createAccount(data);
-  }
-
-  createAccount(data) {
-    console.log(
-      "=========================>Create Account<========================"
-    );
-    console.log("==============================>"+data.primaryImage+"<=======================================");
-    let credentials = {
-      email: data.email,
-      password: data.password
-    };
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(credentials.email, credentials.password)
-      .then(userKey => {
-          data.userID = userKey.user.uid;
-          console.log("================================>"+data.userID+"<=====================================");
-        this.fillUserInfo(data);
-      }).catch((err)=>{
-        console.log(err);
-       Alert.alert("Error...","Email/Password is already in use...Please try again");
-       this.setState({
-         name: "",
-         address: "",
-         email: "",
-         password: "",
-         profileImage: "",
-         loading: false
-
-       });
-    });
-  }
-
-  fillUserInfo(data) {
-    console.log(
-      "===================>Filled User Info<============================"
-    );
-    firebase
-      .firestore()
-      .collection("users")
-      .doc(data.userID)
-      .set(data)
-      .then((data) => {
-        console.log(
-          "================>New User has been added<==================="
-        );
-        this.props.navigation.navigate("loginRoute");
-      }).catch((err)=>{
-        console.log(err);
-    });
   }
 
   getImage() {
@@ -142,30 +80,16 @@ export default class Registration extends Component {
       compressImageQuality: 0.2
     }).then(image => {
       this.setState({ profileImage: image });
-      console.log(" ======================>"+ image+"<================================");
+      Reactotron.log( "Get Gallery: "+ image);
     });
   }
 
-  upload() {
-    let param = this.state.profileImage;
-    console.log("=======================>"+param+"<===============================");
-    if (param) {
-      const sessionId = new Date().getTime();
-      let file = param.path;
-      firebase
-          .storage()
-          .ref("user", file)
-          .child(`${sessionId}.${param.mime}`)
-          .putFile(file)
-          .then(url => {
-            this.preparedStatement(url);
-          });
-    } else {
-      this.preparedStatement();
-    }
+  registration() {
+    this.props.userRegistration(this.state.name, this.state.address, this.state.email, this.state.password, this.state.profileImage);
   }
 
   render() {
+    Reactotron.log("User REGISTRATION: "+this.props.userReg);
     return (
       <Container>
         <HeaderComponent
@@ -173,6 +97,7 @@ export default class Registration extends Component {
          routeNavigation={'loginRoute'}
         />
         <Content>
+
           <Formik
             initialValues={{ name: "", address: "", email: "", password: "" }}
             onSubmit={values => {
@@ -183,7 +108,7 @@ export default class Registration extends Component {
                 email: values.email,
                 password: values.password
               });
-              this.upload();
+              this.registration();
             }}
             validationSchema={yup.object().shape({
               email: yup
@@ -211,6 +136,7 @@ export default class Registration extends Component {
               <View style={{ padding: 20 }}>
                 <View style={{ marginTop: 5 }}>
                   <CardItem style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
+
                     <TouchableOpacity
                         onPress={() => {
                           Alert.alert(
@@ -243,10 +169,22 @@ export default class Registration extends Component {
                     >
                       {this.state.profileImage != "" ? (
                           <View>
-                            <Image
+                            {this.state.profileImage ?
+                                <Image
                                 source={{ uri: this.state.profileImage.path }}
                                 style={{ height: 100, width: 100, borderRadius: 100 }}
-                            />
+                            /> : (
+                                <View>
+                                  <Text>
+                                    <Icon
+                                        type={"FontAwesome"}
+                                        name={"user-circle"}
+                                        style={{ fontSize: 100, color: "#000" }}
+                                    />
+                                  </Text>
+                                </View>
+                            )}
+
                           </View>
                       ) : (
                           <View>
@@ -254,7 +192,7 @@ export default class Registration extends Component {
                               <Icon
                                   type={"FontAwesome"}
                                   name={"user-circle"}
-                                  style={{ fontSize: 100, color: "#E2E2E2" }}
+                                  style={{ fontSize: 100, color: "#000" }}
                               />
                             </Text>
                           </View>
@@ -296,7 +234,7 @@ export default class Registration extends Component {
                       </View>
                     </TouchableOpacity>
                   </CardItem>
-                  <Label style={{ fontWeight: "bold" }}>Name</Label>
+                  <Label style={{ fontWeight: "bold" }}>Email</Label>
                   {/*<Field*/}
                   {/*  name="name"*/}
                   {/*  component={InputFields}*/}
@@ -489,3 +427,19 @@ const style = StyleSheet.create({
     marginTop: 30
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    userReg: state.reg.userReg
+  }
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    userRegistration: (name, address, email, password, profileImage) => {
+      dispatch(registration(name, address, email, password, profileImage))
+    }
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Registration);
