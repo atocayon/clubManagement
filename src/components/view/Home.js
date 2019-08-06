@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Reactotron from 'reactotron-react-native'
-import { View, Text, Image , ActivityIndicator} from "react-native";
+import {View, Text, Image, ActivityIndicator, BackHandler} from 'react-native';
 import firebase from "react-native-firebase";
 import getTheme from "../../../native-base-theme/components";
 import material from "../../../native-base-theme/variables/material";
@@ -43,6 +43,15 @@ class Home extends Component {
       menuOptionsVisibility: true,
       newsFeedOptionsVisibility: true
     });
+
+    this.backhandler = BackHandler.addEventListener("hardwareBackPress", () => {
+      BackHandler.exitApp();
+      return true;
+    });
+  }
+
+  componentWillUnmount() {
+    this.backhandler.remove();
   }
 
   menuOptions() {

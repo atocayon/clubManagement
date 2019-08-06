@@ -4,7 +4,6 @@ import Reactotron from 'reactotron-react-native';
 export const registration = (name, address, email, password, profileImage) => async (dispatch, getState) => {
     const sessionId = new Date().getTime();
     let file = profileImage.path;
-    Reactotron.log("Profile Image"+profileImage);
     let userData = {
       name: name,
       address: address,
@@ -29,15 +28,15 @@ export const registration = (name, address, email, password, profileImage) => as
                         .doc(userData.userID)
                         .set(userData)
                         .then((data) => {
-                            dispatch({type: "REGISTRATION_SUCCESSFUL", payload: data});
+                            dispatch({type: "REGISTRATION_SUCCESSFUL", payload: true});
                         }).catch((err)=>{
-                            dispatch({type: "REGISTRATION_FAILED", payload: err});
+                            dispatch({type: "REGISTRATION_FAILED", payload: false});
                     });
                 }).catch((err)=>{
-                    dispatch({type: "FAILED_AUTH", payload: err});
+                    dispatch({type: "FAILED_AUTH", payload: false});
             });
-        }).catch((err)=>{
-            dispatch({type: "FAILED_UPLOAD", payload: err});
+        }).catch(()=>{
+            dispatch({type: "FAILED_UPLOAD", payload: false});
         }
     );
 };

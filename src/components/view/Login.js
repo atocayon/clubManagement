@@ -1,6 +1,6 @@
 import * as yup from "yup";
-import Reactotron from 'reactotron-react-native';
-import {connect} from 'react-redux';
+import Reactotron from "reactotron-react-native";
+import { connect } from "react-redux";
 import React, { Component } from "react";
 import {
   StackActions,
@@ -18,15 +18,9 @@ import {
   BackHandler
 } from "react-native";
 import { Formik, Field } from "formik";
-import {
-  Item,
-  Label,
-  Input,
-  Button,
-  Icon
-} from "native-base";
+import { Item, Label, Input, Button, Icon } from "native-base";
 import firebase from "react-native-firebase";
-import {login} from "../redux/actions/login";
+import { login } from "../redux/actions/login";
 
 // import InputFields from "../common/forms/InputFields";
 
@@ -36,38 +30,55 @@ class Login extends Component {
     this.state = {
       loading: false,
       email: "",
-      password: ""
+      password: "",
+      loginUser: ""
     };
   }
   componentDidMount() {
-    // firebase
-    //     .auth()
-    //     .onAuthStateChanged((user) => {
-    //   if (user) {
-    //     const resetAction = StackActions.reset({
-    //       index: 0,
-    //       actions: [NavigationActions.navigate({ routeName: "homeRoute" })]
-    //     });
-    //
-    //
-    //     this.props.navigation.dispatch(resetAction);
-    //   }
-    // });
     this.backhandler = BackHandler.addEventListener("hardwareBackPress", () => {
       BackHandler.exitApp();
       return true;
     });
-
   }
 
   componentWillUnmount() {
     this.backhandler.remove();
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      loading: false
+    });
+    if (nextProps.loginSuccess === null) {
+      Alert.alert(
+          "Session Expired",
+          "",
+          [{ text: "OK" }],
+          { cancelable: false }
+      );
+    } else if (nextProps.loginSuccess === false) {
+      Alert.alert(
+        "Login Failed",
+        "It seems like you have entered an unregistered account, Create account first and then try again...",
+        [{ text: "Got it" }],
+        { cancelable: false }
+      );
+    } else {
+      firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+          const resetAction = StackActions.reset({
+            index: 0,
+            actions: [NavigationActions.navigate({ routeName: "homeRoute" })]
+          });
+          this.props.navigation.dispatch(resetAction);
+        }
+      });
+    }
+  }
+
   login() {
     const { email, password } = this.state;
-    this.props.checkLogin(email,password);
-
+    this.props.checkLogin(email, password);
   }
 
   render() {
@@ -125,13 +136,13 @@ class Login extends Component {
                     {errors.email && touched.email ? (
                       <View>
                         <Item error rounded>
-                          <Icon active name='mail' />
+                          <Icon active name="mail" />
                           <Input
                             name="email"
                             onChangeText={handleChange("email")}
                             onBlur={handleBlur("email")}
                             value={values.email}
-                            placeholder="email@gmail.com"
+                            placeholder="email@email.com"
                           />
                           <Icon name="close-circle" />
                         </Item>
@@ -140,23 +151,22 @@ class Login extends Component {
                         </Text>
                       </View>
                     ) : (
-                        <View>
-                          <Item rounded>
-                            <Icon active name='mail' />
-                            <Input
-                                name="email"
-                                onChangeText={handleChange("email")}
-                                onBlur={handleBlur("email")}
-                                value={values.email}
-                                placeholder="email@gmail.com"
-                            />
-                          </Item>
-                        </View>
-
+                      <View>
+                        <Item rounded>
+                          <Icon active name="mail" />
+                          <Input
+                            name="email"
+                            onChangeText={handleChange("email")}
+                            onBlur={handleBlur("email")}
+                            value={values.email}
+                            placeholder="email@email.com"
+                          />
+                        </Item>
+                      </View>
                     )}
                   </View>
                   <View style={{ marginTop: 10 }}>
-                    <Label style={{ fontWeight: "bold" }}>Password</Label>
+                    <Label>Password</Label>
                     {/*<Field*/}
                     {/*  name="password"*/}
                     {/*  component={InputFields}*/}
@@ -165,16 +175,15 @@ class Login extends Component {
                     {/*/>*/}
                     {errors.password && touched.password ? (
                       <View>
-
                         <Item error rounded>
-                          <Icon active name='key' />
+                          <Icon active name="key" />
                           <Input
                             name="password"
                             onChangeText={handleChange("password")}
                             onBlur={handleBlur("password")}
                             value={values.password}
                             secureTextEntry={true}
-                            placeholder="your password..."
+                            placeholder="Your password..."
                           />
                           <Icon name="close-circle" />
                         </Item>
@@ -183,20 +192,19 @@ class Login extends Component {
                         </Text>
                       </View>
                     ) : (
-                        <View>
-                          <Item rounded>
-                            <Icon active name='key' />
-                            <Input
-                                name="password"
-                                onChangeText={handleChange("password")}
-                                onBlur={handleBlur("password")}
-                                value={values.password}
-                                secureTextEntry={true}
-                                placeholder="your password..."
-                            />
-                          </Item>
-                        </View>
-
+                      <View>
+                        <Item rounded>
+                          <Icon active name="key" />
+                          <Input
+                            name="password"
+                            onChangeText={handleChange("password")}
+                            onBlur={handleBlur("password")}
+                            value={values.password}
+                            secureTextEntry={true}
+                            placeholder="Your password..."
+                          />
+                        </Item>
+                      </View>
                     )}
                   </View>
                   <View>
@@ -266,16 +274,18 @@ const style = StyleSheet.create({
 const mapStateToProps = state => {
   return {
     loginSuccess: state.login.loginSuccess
-  }
+  };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
     checkLogin: (email, password) => {
-      dispatch(login(email,password))
+      dispatch(login(email, password));
     }
-  }
+  };
 };
 
-
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Login);
